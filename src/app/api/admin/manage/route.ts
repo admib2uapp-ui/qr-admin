@@ -27,10 +27,19 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { data: admins } = await supabaseAdmin
-      .from('admins')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data: adminPositions } = await supabaseAdmin
+      .from('position_levels')
+      .select('id')
+      .eq('position', 'Admin');
+
+    const adminPositionIds = (adminPositions || []).map(p => p.id);
+
+    let adminsQuery = supabaseAdmin.from('admins').select('*');
+    if (adminPositionIds.length > 0) {
+      const ids = adminPositionIds.map(id => `"${id}"`).join(',');
+      adminsQuery = adminsQuery.or(`role.eq.super_admin,position_level_id.in.(${ids})`);
+    }
+    const { data: admins } = await adminsQuery.order('created_at', { ascending: false });
 
     const { data: merchants } = await supabaseAdmin
       .from('merchants')
