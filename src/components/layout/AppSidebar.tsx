@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Receipt, Users, FileText, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog } from "lucide-react"
+import { LayoutDashboard, Receipt, Users, FileText, BarChart3, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -97,6 +97,14 @@ export function AppSidebar({ theme, toggleTheme }: { theme: "light" | "dark"; to
                   <Link href="/reports">
                     <FileText className="h-4 w-4" />
                     <span>Reports</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === '/analytics'} tooltip="Analytics">
+                  <Link href="/analytics">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Analytics</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
