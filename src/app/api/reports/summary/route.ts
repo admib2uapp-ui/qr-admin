@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const { data: admin } = await supabaseAdmin
       .from('admins')
-      .select('id, role')
+      .select('id, role, partner_id')
       .eq('user_id', user.id)
       .single();
 
@@ -37,12 +37,12 @@ export async function GET(request: Request) {
     const isSuperAdmin = admin.role === 'super_admin';
     let scopeIds: string[] | null = null;
 
-    if (!isSuperAdmin) {
-      const { data: adminMerchants } = await supabaseAdmin
+    if (!isSuperAdmin && admin.partner_id) {
+      const { data: partnerMerchants } = await supabaseAdmin
         .from('merchants')
         .select('id')
-        .eq('admin_id', admin.id);
-      scopeIds = (adminMerchants || []).map(m => m.id);
+        .eq('partner_id', admin.partner_id);
+      scopeIds = (partnerMerchants || []).map(m => m.id);
       if (scopeIds.length === 0) {
         return NextResponse.json({ transactions: [] });
       }

@@ -8,7 +8,7 @@ export interface AdminUser {
   id: string;
   user_id: string;
   email: string;
-  role: 'super_admin' | 'company_admin';
+  role: 'super_admin' | 'partner_admin';
 }
 
 interface AuthContextType {

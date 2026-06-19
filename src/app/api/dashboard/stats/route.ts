@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
     const { data: admin } = await supabaseAdmin
       .from('admins')
-      .select('id, role')
+      .select('id, role, partner_id')
       .eq('user_id', user.id)
       .single();
 
@@ -41,12 +41,12 @@ export async function GET(request: Request) {
     let totalTxQuery = supabaseAdmin.from('completed_transactions').select('*', { count: 'exact', head: true });
     let recentTxQuery = supabaseAdmin.from('completed_transactions').select('id, reference_no, amount, created_at, merchant_id').order('created_at', { ascending: false }).limit(5);
 
-    if (!isSuperAdmin) {
-      const { data: adminMerchants } = await supabaseAdmin
+    if (!isSuperAdmin && admin.partner_id) {
+      const { data: partnerMerchants } = await supabaseAdmin
         .from('merchants')
         .select('id')
-        .eq('admin_id', admin.id);
-      const ids = (adminMerchants || []).map(m => m.id);
+        .eq('partner_id', admin.partner_id);
+      const ids = (partnerMerchants || []).map(m => m.id);
 
       if (ids.length > 0) {
         merchantQuery = merchantQuery.in('id', ids);

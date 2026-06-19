@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Receipt, Users, FileText, LogOut, Moon, Sun, ShieldCheck, PlusCircle } from "lucide-react"
+import { LayoutDashboard, Receipt, Users, FileText, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -116,6 +116,14 @@ export function AppSidebar({ theme, toggleTheme }: { theme: "light" | "dark"; to
                       <Link href="/admin/pending-merchants">
                         <PlusCircle className="h-4 w-4" />
                         <span>Pending Merchant IDs</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={pathname === '/admin/team'} tooltip="Team">
+                      <Link href="/admin/team">
+                        <UserCog className="h-4 w-4" />
+                        <span>Team</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

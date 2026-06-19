@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
     const { data: admin } = await supabaseAdmin
       .from('admins')
-      .select('id, role')
+      .select('id, role, partner_id')
       .eq('user_id', user.id)
       .single();
 
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
       .select('id, user_id, merchant_id, merchant_name, is_active')
       .not('user_id', 'is', null);
 
-    if (!isSuperAdmin) {
-      merchantQuery = merchantQuery.eq('admin_id', admin.id);
+    if (!isSuperAdmin && admin.partner_id) {
+      merchantQuery = merchantQuery.eq('partner_id', admin.partner_id);
     }
 
     const { data: merchants } = await merchantQuery;
