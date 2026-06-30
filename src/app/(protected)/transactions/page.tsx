@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { TransactionsTable } from "@/components/transactions/TransactionsTable";
 
 export default function TransactionsPage() {
@@ -11,7 +12,9 @@ export default function TransactionsPage() {
           <p className="text-[2.5vw] sm:text-sm text-muted-foreground font-medium">All transactions across the system</p>
         </div>
       </div>
-      <TransactionsTable />
+      <Suspense fallback={null}>
+        <TransactionsTable />
+      </Suspense>
     </div>
   );
 }

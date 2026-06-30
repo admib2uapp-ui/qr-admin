@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,16 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, RefreshCw, ArrowUpDown } from "lucide-react";
+import { Search, RefreshCw, ArrowUpDown, ExternalLink } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+
+interface Merchant {
+  id: string;
+  merchant_id: string;
+  merchant_name: string;
+  is_active: boolean;
+}
 
 interface User {
   id: string;
@@ -21,6 +29,7 @@ interface User {
   phone: string | null;
   role: 'individual' | 'company';
   merchantCount: number;
+  merchants: Merchant[];
   disabled: boolean;
   created_at: string;
 }
@@ -182,6 +191,7 @@ export function UsersTable() {
                   Email <ArrowUpDown className="inline h-3 w-3 ml-1" />
                 </TableHead>
                 <TableHead className="font-black text-primary uppercase tracking-widest text-[10px]">Phone</TableHead>
+                <TableHead className="font-black text-primary uppercase tracking-widest text-[10px]">Merchant</TableHead>
                 <TableHead className="font-black text-primary uppercase tracking-widest text-[10px]">Role</TableHead>
                 <TableHead className="font-black text-primary uppercase tracking-widest text-[10px]">Status</TableHead>
                 {isSuperAdmin && <TableHead className="font-black text-primary uppercase tracking-widest text-[10px]">Action</TableHead>}
@@ -191,14 +201,14 @@ export function UsersTable() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="border-primary/5">
-                    {Array.from({ length: isSuperAdmin ? 7 : 6 }).map((_, j) => (
+                    {Array.from({ length: isSuperAdmin ? 8 : 7 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isSuperAdmin ? 7 : 6} className="text-center py-12 text-muted-foreground font-medium">
+                  <TableCell colSpan={isSuperAdmin ? 8 : 7} className="text-center py-12 text-muted-foreground font-medium">
                     No users found
                   </TableCell>
                 </TableRow>
@@ -211,6 +221,27 @@ export function UsersTable() {
                     <TableCell className="font-bold">{u.full_name || '-'}</TableCell>
                     <TableCell className="text-muted-foreground">{u.email || '-'}</TableCell>
                     <TableCell className="text-muted-foreground">{u.phone || '-'}</TableCell>
+                    <TableCell>
+                      {u.merchants && u.merchants.length > 0 ? (
+                        <div className="flex flex-col gap-0.5">
+                          {u.merchants.slice(0, 2).map((m: any) => (
+                            <Link
+                              key={m.id}
+                              href={`/merchants/${m.id}`}
+                              className="text-primary hover:underline font-medium text-xs flex items-center gap-1"
+                            >
+                              {m.merchant_name}
+                              <ExternalLink className="h-3 w-3 shrink-0" />
+                            </Link>
+                          ))}
+                          {u.merchants.length > 2 && (
+                            <span className="text-[10px] text-muted-foreground">+{u.merchants.length - 2} more</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`rounded-full px-3 py-1 font-black text-[10px] uppercase tracking-widest border-2 ${
                         u.role === 'company'
