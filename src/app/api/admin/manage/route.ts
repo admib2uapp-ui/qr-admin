@@ -13,7 +13,7 @@ async function getAuthAdmin(request: Request) {
   if (error || !user) return null;
   const { data: admin } = await supabaseAdmin
     .from('admins')
-    .select('id, role, partner_id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single();
   return admin || null;
@@ -23,48 +23,17 @@ export async function GET(request: Request) {
   try {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     const admin = await getAuthAdmin(request);
-    if (!admin) {
+    if (!admin || admin.role !== 'super_admin') {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { data: adminPositions } = await supabaseAdmin
-      .from('position_levels')
-      .select('id')
-      .eq('position', 'Admin');
+    const { data: admins } = await supabaseAdmin
+      .from('admins')
+      .select('*')
+      .eq('role', 'super_admin')
+      .order('created_at', { ascending: false });
 
-    const adminPositionIds = (adminPositions || []).map(p => p.id);
-
-    let adminsQuery = supabaseAdmin.from('admins').select('*');
-    if (adminPositionIds.length > 0) {
-      const ids = adminPositionIds.map(id => `"${id}"`).join(',');
-      adminsQuery = adminsQuery.or(`role.eq.super_admin,position_level_id.in.(${ids})`);
-    }
-    const { data: admins } = await adminsQuery.order('created_at', { ascending: false });
-
-    const { data: merchants } = await supabaseAdmin
-      .from('merchants')
-      .select('partner_id')
-      .not('partner_id', 'is', null);
-
-    const countMap: Record<string, number> = {};
-    (merchants || []).forEach(m => {
-      if (m.partner_id) countMap[m.partner_id] = (countMap[m.partner_id] || 0) + 1;
-    });
-
-    const partnerIds = [...new Set((admins || []).map(a => a.partner_id).filter(Boolean))];
-    const { data: partners } = partnerIds.length > 0
-      ? await supabaseAdmin.from('partners').select('id, name').in('id', partnerIds)
-      : { data: [] };
-    const partnerMap: Record<string, string> = {};
-    (partners || []).forEach(p => { partnerMap[p.id] = p.name; });
-
-    const result = (admins || []).map(a => ({
-      ...a,
-      merchantCount: countMap[a.partner_id] || 0,
-      partner_name: partnerMap[a.partner_id] || null,
-    }));
-
-    return NextResponse.json({ admins: result });
+    return NextResponse.json({ admins: admins || [] });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -78,18 +47,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { email, role, partner_id, position_level_id } = await request.json();
+    const { email } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: "Missing email" }, { status: 400 });
-    }
-
-    if (role === 'partner_admin' && !partner_id) {
-      return NextResponse.json({ error: "Partner is required for partner admin" }, { status: 400 });
-    }
-
-    if (role === 'partner_admin' && !position_level_id) {
-      return NextResponse.json({ error: "Position is required for partner admin" }, { status: 400 });
     }
 
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
@@ -121,19 +82,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User is already an admin" }, { status: 409 });
     }
 
-    const insertData: any = {
-      user_id: userId,
-      email,
-      role: role || 'partner_admin',
-    };
-    if (role === 'partner_admin') {
-      insertData.partner_id = partner_id;
-      insertData.position_level_id = position_level_id;
-    }
-
     const { data: newAdmin, error } = await supabaseAdmin
       .from('admins')
-      .insert(insertData)
+      .insert({ user_id: userId, email, role: 'super_admin' })
       .select()
       .single();
 

@@ -32,7 +32,30 @@ export async function GET(request: Request) {
       .select('*')
       .order('name', { ascending: true });
 
-    return NextResponse.json({ partners: partners || [] });
+    const partnerIds = (partners || []).map(p => p.id);
+
+    const [merchantCountsRes, adminCountsRes] = await Promise.all([
+      supabaseAdmin.from('merchants').select('partner_id').in('partner_id', partnerIds.length > 0 ? partnerIds : ['none']),
+      supabaseAdmin.from('admins').select('partner_id').in('partner_id', partnerIds.length > 0 ? partnerIds : ['none']),
+    ]);
+
+    const merchantCounts: Record<string, number> = {};
+    (merchantCountsRes.data || []).forEach(m => {
+      merchantCounts[m.partner_id] = (merchantCounts[m.partner_id] || 0) + 1;
+    });
+
+    const adminCounts: Record<string, number> = {};
+    (adminCountsRes.data || []).forEach(a => {
+      adminCounts[a.partner_id] = (adminCounts[a.partner_id] || 0) + 1;
+    });
+
+    return NextResponse.json({
+      partners: (partners || []).map(p => ({
+        ...p,
+        merchantCount: merchantCounts[p.id] || 0,
+        adminCount: adminCounts[p.id] || 0,
+      })),
+    });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -46,9 +69,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { name, create_default_position } = await request.json();
+    const { name, admin_email } = await request.json();
     if (!name) {
       return NextResponse.json({ error: "Missing partner name" }, { status: 400 });
+    }
+    if (!admin_email) {
+      return NextResponse.json({ error: "Missing admin email" }, { status: 400 });
     }
 
     const { data: partner, error } = await supabaseAdmin
@@ -59,18 +85,52 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    let default_position = null;
-    if (create_default_position) {
-      const { data: pos, error: posError } = await supabaseAdmin
-        .from('position_levels')
-        .insert({ partner_id: partner.id, position: "Admin", level: 1 })
-        .select()
-        .single();
-      if (posError) throw posError;
-      default_position = pos;
+    const { data: pos, error: posError } = await supabaseAdmin
+      .from('position_levels')
+      .insert({ partner_id: partner.id, position: "Admin", level: 1 })
+      .select()
+      .single();
+
+    if (posError) throw posError;
+
+    const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
+    let userId = authUsers?.users.find(u => u.email === admin_email)?.id;
+
+    if (!userId) {
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: admin_email,
+        password: "123456",
+        email_confirm: true,
+      });
+      if (createError) throw createError;
+      userId = newUser.user.id;
+
+      await supabaseAdmin.from('profiles').insert({
+        id: userId,
+        email: admin_email,
+        full_name: admin_email.split('@')[0],
+      }).maybeSingle();
     }
 
-    return NextResponse.json({ partner, default_position });
+    const { data: existingAdmin } = await supabaseAdmin
+      .from('admins')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existingAdmin) {
+      return NextResponse.json({ error: "User is already an admin" }, { status: 409 });
+    }
+
+    const { data: newAdmin, error: adminError } = await supabaseAdmin
+      .from('admins')
+      .insert({ user_id: userId, email: admin_email, role: 'partner_admin', partner_id: partner.id, position_level_id: pos.id })
+      .select()
+      .single();
+
+    if (adminError) throw adminError;
+
+    return NextResponse.json({ partner, admin: newAdmin });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
