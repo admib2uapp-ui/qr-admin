@@ -458,38 +458,39 @@ export default function HelpdeskPage() {
                   </div>
                 </div>
 
-                {/* Reply Form */}
-                <div className="pt-[2vw] sm:pt-3 border-t border-primary/10">
-                  <label className="text-[2.5vw] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-[1vw] sm:mb-2">
-                    Reply
-                  </label>
-                  <div className="flex gap-2">
-                    <textarea
-                      value={replyText}
-                      onChange={e => setReplyText(e.target.value)}
-                      placeholder="Type your reply..."
-                      rows={2}
-                      className="flex-1 rounded-xl bg-primary/5 border-2 border-primary/10 text-sm font-medium px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none placeholder:text-muted-foreground/40"
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleReply();
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={handleReply}
-                      disabled={!replyText.trim() || sendingReply}
-                      className="h-auto px-4 rounded-xl font-black uppercase tracking-widest text-xs"
-                    >
-                      {sendingReply ? (
-                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
+                {selectedTicket.status !== 'resolved' && selectedTicket.status !== 'closed' && (
+                  <div className="pt-[2vw] sm:pt-3 border-t border-primary/10">
+                    <label className="text-[2.5vw] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-[1vw] sm:mb-2">
+                      Reply
+                    </label>
+                    <div className="flex gap-2">
+                      <textarea
+                        value={replyText}
+                        onChange={e => setReplyText(e.target.value)}
+                        placeholder="Type your reply..."
+                        rows={2}
+                        className="flex-1 rounded-xl bg-primary/5 border-2 border-primary/10 text-sm font-medium px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none placeholder:text-muted-foreground/40"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleReply();
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={handleReply}
+                        disabled={!replyText.trim() || sendingReply}
+                        className="h-auto px-4 rounded-xl font-black uppercase tracking-widest text-xs"
+                      >
+                        {sendingReply ? (
+                          <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           ) : null}
