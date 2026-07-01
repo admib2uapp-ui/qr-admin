@@ -127,6 +127,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    if (status === 'resolved' || status === 'closed') {
+      await supabaseAdmin
+        .from('helpdesk_ticket_messages')
+        .delete()
+        .eq('ticket_id', id);
+    }
+
     const { data: updated, error } = await supabaseAdmin
       .from('helpdesk_tickets')
       .update({ status, updated_at: new Date().toISOString() })
