@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { AuthProvider } from "@/hooks/useAuth"
 import { AdminGuard } from "@/components/layout/AdminGuard"
+import { PwaSetup } from "@/components/layout/PwaSetup"
 import { useState, useEffect } from "react"
 
 export default function ProtectedLayout({
@@ -42,6 +43,7 @@ export default function ProtectedLayout({
           </SidebarInset>
         </SidebarProvider>
       </AdminGuard>
+      <PwaSetup />
     </AuthProvider>
   )
 }
