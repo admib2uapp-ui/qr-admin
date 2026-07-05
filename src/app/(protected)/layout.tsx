@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar"
 import { AuthProvider } from "@/hooks/useAuth"
 import { AdminGuard } from "@/components/layout/AdminGuard"
 import { PwaSetup } from "@/components/layout/PwaSetup"
+import { InstallPWA } from "@/components/pwa/InstallPWA"
 import { useState, useEffect } from "react"
 
 export default function ProtectedLayout({
@@ -44,6 +45,7 @@ export default function ProtectedLayout({
         </SidebarProvider>
       </AdminGuard>
       <PwaSetup />
+      <InstallPWA />
     </AuthProvider>
   )
 }
