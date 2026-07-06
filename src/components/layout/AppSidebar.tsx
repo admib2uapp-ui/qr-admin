@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Receipt, Users, FileText, BarChart3, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog, Building2, LifeBuoy } from "lucide-react"
+import { LayoutDashboard, Receipt, Users, FileText, BarChart3, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog, Building2, LifeBuoy, Volume2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -169,6 +169,14 @@ export function AppSidebar({ theme, toggleTheme }: { theme: "light" | "dark"; to
                       <Link href="/admin/partners">
                         <Building2 className="h-4 w-4" />
                         <span>Partners</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={pathname === '/admin/soundbox-report'} tooltip="Soundbox Report">
+                      <Link href="/admin/soundbox-report">
+                        <Volume2 className="h-4 w-4" />
+                        <span>Soundbox Report</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
