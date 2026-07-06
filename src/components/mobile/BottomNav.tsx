@@ -2,18 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ArrowLeftRight, Store, BarChart3, LifeBuoy } from "lucide-react";
-
-const navItems = [
-  { path: "/merchants", label: "Merchants", icon: Store },
-  { path: "/transactions", label: "Txns", icon: ArrowLeftRight },
-  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/reports", label: "Reports", icon: BarChart3 },
-  { path: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
-];
+import { useMemo } from "react";
+import { LayoutDashboard, ArrowLeftRight, Store, BarChart3, LifeBuoy, Volume2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { adminUser } = useAuth();
+
+  const isSuperAdmin = adminUser?.role === 'super_admin';
+
+  const navItems = useMemo(() => {
+    if (isSuperAdmin) {
+      return [
+        { path: "/merchants", label: "Merchants", icon: Store },
+        { path: "/admin/soundbox-report", label: "Soundbox", icon: Volume2 },
+        { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { path: "/reports", label: "Reports", icon: BarChart3 },
+        { path: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
+      ];
+    }
+    return [
+      { path: "/merchants", label: "Merchants", icon: Store },
+      { path: "/transactions", label: "Txns", icon: ArrowLeftRight },
+      { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { path: "/reports", label: "Reports", icon: BarChart3 },
+      { path: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
+    ];
+  }, [isSuperAdmin]);
 
   const isActive = (path: string) => pathname === path;
 

@@ -50,6 +50,20 @@ function methodLabel(tag: string | null) {
   return 'QR';
 }
 
+function HighlightText({ text, search }: { text: string; search: string }) {
+  if (!search || !text) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(search.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="bg-yellow-300/30 text-foreground rounded px-0.5 font-bold">{text.slice(idx, idx + search.length)}</span>
+      {text.slice(idx + search.length)}
+    </>
+  );
+}
+
 export function MobileTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -193,8 +207,8 @@ export function MobileTransactions() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0 mr-2">
-                      <p className="font-bold text-sm truncate">{t.merchant_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{t.user_name}</p>
+                      <p className="font-bold text-sm truncate"><HighlightText text={t.merchant_name} search={search} /></p>
+                      <p className="text-xs text-muted-foreground truncate"><HighlightText text={t.user_name} search={search} /></p>
                     </div>
                     <p className="font-black text-lg tabular-nums shrink-0">{formatLKR(t.amount)}</p>
                   </div>
@@ -218,11 +232,11 @@ export function MobileTransactions() {
                   <div className="mx-4 px-4 py-3 bg-primary/5 border-x border-b border-primary/10 rounded-b-xl -mt-1 space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Reference</span>
-                      <span className="font-mono font-bold">{t.reference_no}</span>
+                      <span className="font-mono font-bold"><HighlightText text={t.reference_no} search={search} /></span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Merchant ID</span>
-                      <span className="font-bold">{t.merchant_id_str}</span>
+                      <span className="font-bold"><HighlightText text={t.merchant_id_str} search={search} /></span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Time</span>
