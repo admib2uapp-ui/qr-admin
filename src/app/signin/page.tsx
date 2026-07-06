@@ -1,18 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { supabase, getSession } from "@/lib/supabase";
-import { QrCode } from "lucide-react";
+import { QrCode, CheckCircle2 } from "lucide-react";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [checkingSession, setCheckingSession] = useState(true);
+  const [passwordUpdated, setPasswordUpdated] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("password_updated") === "true") {
+      setPasswordUpdated(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -113,6 +122,13 @@ export default function SignInPage() {
             <h2 className="text-3xl font-black text-foreground mb-1 tracking-tight uppercase">Welcome Back</h2>
             <p className="text-muted-foreground font-medium mb-8">Admin portal sign in</p>
 
+            {passwordUpdated && (
+              <div className="bg-emerald-500/10 text-emerald-500 text-sm p-4 rounded-xl mb-6 border border-emerald-500/20 animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-3">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Password updated successfully. Sign in with your new password.</span>
+              </div>
+            )}
+
             {error && (
               <div className="bg-rose-500/10 text-rose-500 text-sm p-4 rounded-xl mb-6 border border-rose-500/20 animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-3">
                 <span>⚠</span>
@@ -162,6 +178,15 @@ export default function SignInPage() {
                 </div>
               </div>
 
+              <div className="flex justify-end -mt-2">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -178,5 +203,17 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }
