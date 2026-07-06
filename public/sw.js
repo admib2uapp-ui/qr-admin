@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [200, 100, 200],
-    data: { url: "/" },
+    data: { url: "/", event: data.event },
   };
 
   event.waitUntil(
@@ -27,7 +27,12 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const urlToOpen = event.notification.data?.url || "/";
+  const eventType = event.notification.data?.event;
+  const urlMap = {
+    "ticket.created": "/helpdesk",
+    "user.registered": "/merchants",
+  };
+  const urlToOpen = urlMap[eventType] || "/dashboard";
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
