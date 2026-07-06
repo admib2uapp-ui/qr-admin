@@ -6,6 +6,8 @@ import { AuthProvider } from "@/hooks/useAuth"
 import { AdminGuard } from "@/components/layout/AdminGuard"
 import { PwaSetup } from "@/components/layout/PwaSetup"
 import { InstallPWA } from "@/components/pwa/InstallPWA"
+import { BottomNav } from "@/components/mobile/BottomNav"
+import { MobileHeader } from "@/components/mobile/MobileHeader"
 import { useState, useEffect } from "react"
 
 export default function ProtectedLayout({
@@ -39,9 +41,13 @@ export default function ProtectedLayout({
       <AdminGuard>
         <SidebarProvider>
           <AppSidebar theme={theme} toggleTheme={toggleTheme} />
+          <MobileHeader />
           <SidebarInset className="p-[3vw] sm:p-4 lg:p-6 bg-background min-h-screen">
-            {children}
+            <div className="pt-[min(15vw,60px)] pb-[min(18vw,72px)] md:pt-0 md:pb-0">
+              {children}
+            </div>
           </SidebarInset>
+          <BottomNav />
         </SidebarProvider>
       </AdminGuard>
       <PwaSetup />

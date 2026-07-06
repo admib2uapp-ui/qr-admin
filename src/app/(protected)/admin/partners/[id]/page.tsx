@@ -11,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobilePartnerDetail } from "@/components/mobile/MobilePartnerDetail";
 
 interface AdminRecord {
   id: string;
@@ -33,6 +35,7 @@ interface MerchantRecord {
 export default function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   const [partner, setPartner] = useState<any>(null);
   const [admins, setAdmins] = useState<AdminRecord[]>([]);
@@ -137,6 +140,10 @@ export default function PartnerDetailPage() {
         </Button>
       </div>
     );
+  }
+
+  if (isMobile) {
+    return <MobilePartnerDetail />;
   }
 
   return (

@@ -9,6 +9,8 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, Trash2, UserPlus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileManageAdmins } from "@/components/mobile/MobileManageAdmins";
 
 interface AdminRecord {
   id: string;
@@ -18,6 +20,7 @@ interface AdminRecord {
 }
 
 export default function ManageAdminsPage() {
+  const isMobile = useIsMobile();
   const [admins, setAdmins] = useState<AdminRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
@@ -73,6 +76,20 @@ export default function ManageAdminsPage() {
       }
     } catch {}
   };
+
+  if (isMobile) {
+    return (
+      <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[5vw] sm:text-2xl font-black text-foreground tracking-tight uppercase">Manage Admins</h1>
+            <p className="text-[2.5vw] sm:text-sm text-muted-foreground font-medium">QR4POS internal admin users</p>
+          </div>
+        </div>
+        <MobileManageAdmins />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

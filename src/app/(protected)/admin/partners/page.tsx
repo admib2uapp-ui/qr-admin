@@ -10,6 +10,8 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, Building2, Plus, ExternalLink } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobilePartners } from "@/components/mobile/MobilePartners";
 
 interface Partner {
   id: string;
@@ -21,6 +23,7 @@ interface Partner {
 
 export default function PartnersPage() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -67,6 +70,20 @@ export default function PartnersPage() {
       setCreateLoading(false);
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[5vw] sm:text-2xl font-black text-foreground tracking-tight uppercase">Partners</h1>
+            <p className="text-[2.5vw] sm:text-sm text-muted-foreground font-medium">Manage partner organizations</p>
+          </div>
+        </div>
+        <MobilePartners />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, ChevronDown, ChevronUp, Send, LifeBuoy, MessageSquare, Receipt } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHelpdesk } from "@/components/mobile/MobileHelpdesk";
 
 interface Ticket {
   id: string;
@@ -51,6 +53,7 @@ function formatDate(iso: string) {
 }
 
 export default function HelpdeskPage() {
+  const isMobile = useIsMobile();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -166,6 +169,20 @@ export default function HelpdeskPage() {
     { key: "resolved", label: "Resolved" },
     { key: "closed", label: "Closed" },
   ];
+
+  if (isMobile) {
+    return (
+      <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[5vw] sm:text-2xl font-black text-foreground tracking-tight uppercase">Helpdesk</h1>
+            <p className="text-[2.5vw] sm:text-sm text-muted-foreground font-medium">Manage support tickets</p>
+          </div>
+        </div>
+        <MobileHelpdesk />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-[6vw] sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

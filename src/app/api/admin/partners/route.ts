@@ -93,23 +93,29 @@ export async function POST(request: Request) {
 
     if (posError) throw posError;
 
-    const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
-    let userId = authUsers?.users.find(u => u.email === admin_email)?.id;
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: admin_email,
+      password: "123456",
+      email_confirm: true,
+    });
 
-    if (!userId) {
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: admin_email,
-        password: "123456",
-        email_confirm: true,
-      });
-      if (createError) throw createError;
+    let userId: string | undefined;
+
+    if (!createError) {
       userId = newUser.user.id;
-
       await supabaseAdmin.from('profiles').insert({
         id: userId,
         email: admin_email,
         full_name: admin_email.split('@')[0],
       }).maybeSingle();
+    } else if (createError.message?.toLowerCase().includes('already')) {
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 10000,
+      });
+      userId = authUsers?.users.find(u => u.email === admin_email)?.id;
+    } else {
+      throw createError;
     }
 
     const { data: existingAdmin } = await supabaseAdmin

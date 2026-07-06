@@ -9,10 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import MerchantInfo from "@/components/merchants/MerchantInfo";
 import MerchantTransactions from "@/components/merchants/MerchantTransactions";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileMerchantDetail from "@/components/mobile/MobileMerchantDetail";
 
 export default function MerchantDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [merchant, setMerchant] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [team, setTeam] = useState<any[]>([]);
@@ -78,6 +81,10 @@ export default function MerchantDetailPage() {
   }
 
   const userDisabled = user?.disabled ?? false;
+
+  if (isMobile) {
+    return <MobileMerchantDetail />;
+  }
 
   return (
     <div className="space-y-[4vw] sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
