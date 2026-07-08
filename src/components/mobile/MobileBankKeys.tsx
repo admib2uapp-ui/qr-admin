@@ -132,27 +132,27 @@ export function MobileBankKeys() {
         {status?.has_keys && status.api_key_name && (
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">{status.api_key_name}</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">API_KEY</p>
               <div className="flex items-center gap-2">
                 <code className={`flex-1 p-2.5 rounded-lg text-xs font-mono tracking-wider border leading-none truncate ${revealedKeys?.[status.api_key_name] ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
                   {revealedKeys?.[status.api_key_name] ?? KEY_MASK}
                 </code>
                 {revealedKeys?.[status.api_key_name] && (
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys[status.api_key_name!]!, status.api_key_name!)} className="h-9 w-9 p-0 shrink-0 rounded-lg">
-                    {copiedField === status.api_key_name ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys[status.api_key_name!]!, "API_KEY")} className="h-9 w-9 p-0 shrink-0 rounded-lg">
+                    {copiedField === "API_KEY" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">BANK_WEBHOOK_SECRET</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">WEBHOOK_SECRET</p>
               <div className="flex items-center gap-2">
                 <code className={`flex-1 p-2.5 rounded-lg text-xs font-mono tracking-wider border leading-none truncate ${revealedKeys?.["BANK_WEBHOOK_SECRET"] ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
                   {revealedKeys?.["BANK_WEBHOOK_SECRET"] ?? KEY_MASK}
                 </code>
                 {revealedKeys?.["BANK_WEBHOOK_SECRET"] && (
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys["BANK_WEBHOOK_SECRET"]!, "BANK_WEBHOOK_SECRET")} className="h-9 w-9 p-0 shrink-0 rounded-lg">
-                    {copiedField === "BANK_WEBHOOK_SECRET" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys["BANK_WEBHOOK_SECRET"]!, "WEBHOOK_SECRET")} className="h-9 w-9 p-0 shrink-0 rounded-lg">
+                    {copiedField === "WEBHOOK_SECRET" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>

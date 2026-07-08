@@ -150,15 +150,15 @@ export default function BankKeySection() {
         {status?.has_keys && status.api_key_name && (
           <div className="space-y-2">
             {renderKeyRow(
-              status.api_key_name,
+              "API_KEY",
               revealedKeys?.[status.api_key_name] ?? KEY_MASK,
-              status.api_key_name,
+              "API_KEY",
               !!revealedKeys?.[status.api_key_name]
             )}
             {renderKeyRow(
-              "BANK_WEBHOOK_SECRET",
+              "WEBHOOK_SECRET",
               revealedKeys?.["BANK_WEBHOOK_SECRET"] ?? KEY_MASK,
-              "BANK_WEBHOOK_SECRET",
+              "WEBHOOK_SECRET",
               !!revealedKeys?.["BANK_WEBHOOK_SECRET"]
             )}
           </div>
