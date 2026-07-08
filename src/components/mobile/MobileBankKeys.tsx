@@ -100,7 +100,7 @@ export function MobileBankKeys() {
     return (
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center gap-3">
-          <h1 className="font-black text-lg text-foreground tracking-tight">Bank API Keys</h1>
+          <h1 className="font-black text-lg text-foreground tracking-tight">API Keys</h1>
         </div>
         <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
           <div className="flex items-center justify-center py-6 text-muted-foreground">
@@ -114,7 +114,7 @@ export function MobileBankKeys() {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-3">
-        <h1 className="font-black text-lg text-foreground tracking-tight">Bank API Keys</h1>
+        <h1 className="font-black text-lg text-foreground tracking-tight">API Keys</h1>
       </div>
 
       <div className="bg-primary/5 rounded-xl p-5 border border-primary/10 space-y-5">

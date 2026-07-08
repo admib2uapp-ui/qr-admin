@@ -136,10 +136,10 @@ export function AppSidebar({ theme, toggleTheme }: { theme: "light" | "dark"; to
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={pathname === '/admin/bank-keys'} tooltip="Bank Keys">
+                    <SidebarMenuButton asChild isActive={pathname === '/admin/bank-keys'} tooltip="API Keys">
                       <Link href="/admin/bank-keys">
                         <Key className="h-4 w-4" />
-                        <span>Bank Keys</span>
+                        <span>API Keys</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
