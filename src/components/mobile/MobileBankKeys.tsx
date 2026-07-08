@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Key, RefreshCw, Check, Copy, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { apiFetch } from "@/lib/api";
 
 const KEY_MASK = "*".repeat(64);
@@ -20,6 +21,7 @@ export function MobileBankKeys() {
   const [generating, setGenerating] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [revealedKeys, setRevealedKeys] = useState<Record<string, string> | null>(null);
+  const [confirmType, setConfirmType] = useState<"generate" | "rotate" | null>(null);
   const [error, setError] = useState("");
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -42,8 +44,6 @@ export function MobileBankKeys() {
   }, []);
 
   const handleGenerate = async () => {
-    if (!confirm("Generate new bank API keys? The current keys will stop working immediately.")) return;
-
     setGenerating(true);
     setError("");
 
@@ -68,8 +68,6 @@ export function MobileBankKeys() {
   };
 
   const handleRotate = async () => {
-    if (!confirm("Rotate webhook secret? The old secret will stop working immediately.")) return;
-
     setRotating(true);
     setError("");
 
@@ -119,7 +117,7 @@ export function MobileBankKeys() {
         <h1 className="font-black text-lg text-foreground tracking-tight">Bank API Keys</h1>
       </div>
 
-      <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 space-y-4">
+      <div className="bg-primary/5 rounded-xl p-5 border border-primary/10 space-y-5">
         {status && (
           <div className="flex items-center gap-2">
             <Badge
@@ -132,9 +130,9 @@ export function MobileBankKeys() {
         )}
 
         {status?.has_keys && status.api_key_name && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">{status.api_key_name}</p>
+              <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">{status.api_key_name}</p>
               <div className="flex items-center gap-2">
                 <code className={`flex-1 p-2.5 rounded-lg text-xs font-mono tracking-wider border leading-none truncate ${revealedKeys?.[status.api_key_name] ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
                   {revealedKeys?.[status.api_key_name] ?? KEY_MASK}
@@ -172,16 +170,36 @@ export function MobileBankKeys() {
           </div>
         )}
 
-        <div className="space-y-2">
-          <Button onClick={handleGenerate} disabled={generating} className="w-full h-9 rounded-xl text-xs font-black uppercase tracking-widest">
+          <div className="space-y-3">
+          <Button onClick={() => setConfirmType("generate")} disabled={generating || rotating} className="w-full h-11 rounded-xl text-sm font-black uppercase tracking-widest">
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
             {generating ? "Generating..." : status?.has_keys ? "Regenerate Keys" : "Generate Keys"}
           </Button>
-          <Button onClick={handleRotate} disabled={rotating} variant="outline" className="w-full h-9 rounded-xl text-xs font-black uppercase tracking-widest">
+          <Button onClick={() => setConfirmType("rotate")} disabled={generating || rotating} variant="outline" className="w-full h-11 rounded-xl text-sm font-black uppercase tracking-widest">
             {rotating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             {rotating ? "Rotating..." : "Rotate Webhook Secret"}
           </Button>
         </div>
+
+        <ConfirmDialog
+          open={confirmType === "generate"}
+          onOpenChange={(o) => { if (!o) setConfirmType(null); }}
+          title="Generate New Keys?"
+          description="This will create new API key and webhook secret. The current keys will stop working immediately."
+          confirmLabel="Generate"
+          onConfirm={handleGenerate}
+          loading={generating}
+        />
+
+        <ConfirmDialog
+          open={confirmType === "rotate"}
+          onOpenChange={(o) => { if (!o) setConfirmType(null); }}
+          title="Rotate Webhook Secret?"
+          description="A new webhook secret will replace the current one. The old secret will stop working immediately."
+          confirmLabel="Rotate"
+          onConfirm={handleRotate}
+          loading={rotating}
+        />
       </div>
     </div>
   );
