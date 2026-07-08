@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, RefreshCw, Check, Copy, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { Key, RefreshCw, Check, Copy, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,29 +15,14 @@ interface KeyStatus {
   api_key_name: string | null;
 }
 
-interface GeneratedKeys {
-  api_key: string;
-  api_key_name: string;
-  webhook_secret: string;
-  worker_name: string;
-}
-
-interface RotatedKeys {
-  new_webhook_secret: string;
-  worker_name: string;
-  message: string;
-}
-
 export default function BankKeySection() {
   const [status, setStatus] = useState<KeyStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [rotating, setRotating] = useState(false);
-  const [generatedKeys, setGeneratedKeys] = useState<GeneratedKeys | null>(null);
-  const [rotatedKeys, setRotatedKeys] = useState<RotatedKeys | null>(null);
+  const [revealedKeys, setRevealedKeys] = useState<Record<string, string> | null>(null);
   const [error, setError] = useState("");
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [revealKeys, setRevealKeys] = useState(false);
 
   const fetchStatus = async () => {
     setLoading(true);
@@ -62,8 +47,6 @@ export default function BankKeySection() {
 
     setGenerating(true);
     setError("");
-    setGeneratedKeys(null);
-    setRotatedKeys(null);
 
     try {
       const res = await apiFetch("/api/admin/bank-keys/generate", {
@@ -76,9 +59,8 @@ export default function BankKeySection() {
         return;
       }
 
-      setGeneratedKeys(data);
-      setRevealKeys(true);
-      await fetchStatus();
+      setStatus(prev => prev ? { ...prev, has_keys: true, api_key_name: data.api_key_name } : prev);
+      setRevealedKeys({ [data.api_key_name]: data.api_key, BANK_WEBHOOK_SECRET: data.webhook_secret });
     } catch {
       setError("Network error");
     } finally {
@@ -91,7 +73,6 @@ export default function BankKeySection() {
 
     setRotating(true);
     setError("");
-    setRotatedKeys(null);
 
     try {
       const res = await apiFetch("/api/admin/bank-keys/rotate", {
@@ -104,9 +85,7 @@ export default function BankKeySection() {
         return;
       }
 
-      setRotatedKeys(data);
-      setRevealKeys(true);
-      await fetchStatus();
+      setRevealedKeys({ BANK_WEBHOOK_SECRET: data.new_webhook_secret });
     } catch {
       setError("Network error");
     } finally {
@@ -120,10 +99,19 @@ export default function BankKeySection() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const maskKey = (key: string) => {
-    if (!revealKeys) return `${key.slice(0, 8)}...${key.slice(-4)}`;
-    return key;
-  };
+  const renderKeyRow = (keyName: string, displayValue: string, copyKey: string, highlighted: boolean) => (
+    <div className={`flex items-center gap-4 ${highlighted ? 'p-3 -mx-3 -my-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20' : ''}`}>
+      <span className={`text-sm font-black uppercase tracking-widest shrink-0 w-[200px] ${highlighted ? 'text-emerald-600' : 'text-muted-foreground'}`}>{keyName}</span>
+      <code className={`block p-3 rounded-xl text-sm font-mono tracking-wider leading-none w-fit min-w-[400px] whitespace-nowrap border ${highlighted ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
+        {displayValue}
+      </code>
+      {highlighted && (
+        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(displayValue, copyKey)} className="h-10 w-10 p-0 shrink-0 rounded-xl">
+          {copiedField === copyKey ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -163,18 +151,18 @@ export default function BankKeySection() {
 
         {status?.has_keys && status.api_key_name && (
           <div className="space-y-2">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-black uppercase tracking-widest text-muted-foreground shrink-0 w-[200px]">{status.api_key_name}</span>
-              <code className="block p-3 rounded-xl bg-background text-sm font-mono tracking-wider border border-primary/10 leading-none w-fit min-w-[400px] whitespace-nowrap">
-                {KEY_MASK}
-              </code>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-black uppercase tracking-widest text-muted-foreground shrink-0 w-[200px]">BANK_WEBHOOK_SECRET</span>
-              <code className="block p-3 rounded-xl bg-background text-sm font-mono tracking-wider border border-primary/10 leading-none w-fit min-w-[400px] whitespace-nowrap">
-                {KEY_MASK}
-              </code>
-            </div>
+            {renderKeyRow(
+              status.api_key_name,
+              revealedKeys?.[status.api_key_name] ?? KEY_MASK,
+              status.api_key_name,
+              !!revealedKeys?.[status.api_key_name]
+            )}
+            {renderKeyRow(
+              "BANK_WEBHOOK_SECRET",
+              revealedKeys?.["BANK_WEBHOOK_SECRET"] ?? KEY_MASK,
+              "BANK_WEBHOOK_SECRET",
+              !!revealedKeys?.["BANK_WEBHOOK_SECRET"]
+            )}
           </div>
         )}
         {status && !status.has_keys && (
@@ -185,59 +173,6 @@ export default function BankKeySection() {
           <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-sm font-bold">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
-          </div>
-        )}
-
-        {generatedKeys && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Keys Generated — copy these now, they won't be shown again</span>
-              <Button variant="ghost" size="sm" onClick={() => setRevealKeys(!revealKeys)} className="h-8 px-2">
-                {revealKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{generatedKeys.api_key_name}</div>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 p-2 rounded-lg bg-background text-xs font-mono break-all border border-primary/10">
-                    {maskKey(generatedKeys.api_key)}
-                  </code>
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(generatedKeys.api_key, "api_key")} className="h-8 w-8 p-0 shrink-0">
-                    {copiedField === "api_key" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">BANK_WEBHOOK_SECRET</div>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 p-2 rounded-lg bg-background text-xs font-mono break-all border border-primary/10">
-                    {maskKey(generatedKeys.webhook_secret)}
-                  </code>
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(generatedKeys.webhook_secret, "webhook")} className="h-8 w-8 p-0 shrink-0">
-                    {copiedField === "webhook" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {rotatedKeys && (
-          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-blue-600 block">Webhook Secret Rotated</span>
-            <p className="text-xs text-muted-foreground">{rotatedKeys.message}</p>
-            <div>
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">New BANK_WEBHOOK_SECRET</div>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 p-2 rounded-lg bg-background text-xs font-mono break-all border border-primary/10">
-                  {maskKey(rotatedKeys.new_webhook_secret)}
-                </code>
-                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(rotatedKeys.new_webhook_secret, "rotated")} className="h-8 w-8 p-0 shrink-0">
-                  {copiedField === "rotated" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
           </div>
         )}
 

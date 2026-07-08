@@ -46,7 +46,14 @@ export async function GET(request: Request) {
 
     const workerName = `${partner.name.toLowerCase().replace(/[^a-z0-9-]/g, '')}-api`;
 
-    const kmRes = await fetch(`${keyManagerUrl}/secrets/status?worker=${workerName}`, {
+    const apiKeyName = partner.name
+      .replace(/'/g, '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '')
+      .toUpperCase() + '_API_KEY';
+
+    const kmRes = await fetch(`${keyManagerUrl}/secrets/status?worker=${workerName}&api_key_name=${apiKeyName}`, {
       headers: { Authorization: `Bearer ${keyManagerApiKey}` },
     });
 
