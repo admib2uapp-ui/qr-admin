@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Key, RefreshCw, Check, Copy, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiFetch } from "@/lib/api";
 
@@ -15,7 +14,7 @@ interface KeyStatus {
   api_key_name: string | null;
 }
 
-export default function BankKeySection() {
+export function MobileBankKeys() {
   const [status, setStatus] = useState<KeyStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -99,45 +98,28 @@ export default function BankKeySection() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const renderKeyRow = (keyName: string, displayValue: string, copyKey: string, highlighted: boolean) => (
-    <div className={`flex items-center gap-3 ${highlighted ? 'p-3 -mx-3 -my-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20' : ''}`}>
-      <span className={`text-sm font-black uppercase tracking-widest shrink-0 w-[220px] ${highlighted ? 'text-emerald-600' : 'text-muted-foreground'}`}>{keyName}</span>
-      <code className={`block p-3 rounded-xl text-sm font-mono tracking-wider leading-none w-fit max-w-full truncate border ${highlighted ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
-        {displayValue}
-      </code>
-      {highlighted && (
-        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(displayValue, copyKey)} className="h-10 w-10 p-0 shrink-0 rounded-xl">
-          {copiedField === copyKey ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-        </Button>
-      )}
-    </div>
-  );
-
   if (loading) {
     return (
-      <Card className="overflow-hidden border-primary/10 shadow-xl shadow-primary/5">
-        <CardHeader className="p-[3vw] sm:p-4 pb-[1.5vw] sm:pb-3">
-          <CardTitle className="text-[4vw] sm:text-lg font-black text-foreground tracking-tight uppercase flex items-center gap-2">
-            <Key className="h-5 w-5" /> Bank API Keys
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-[3vw] sm:p-4 pt-0">
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center gap-3">
+          <h1 className="font-black text-lg text-foreground tracking-tight">Bank API Keys</h1>
+        </div>
+        <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+          <div className="flex items-center justify-center py-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading...
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="overflow-hidden border-primary/10 shadow-xl shadow-primary/5">
-      <CardHeader className="p-[3vw] sm:p-4 pb-[1.5vw] sm:pb-3">
-        <CardTitle className="text-[4vw] sm:text-lg font-black text-foreground tracking-tight uppercase flex items-center gap-2">
-          <Key className="h-5 w-5" /> Bank API Keys
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-[3vw] sm:p-4 pt-0 space-y-4">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3">
+        <h1 className="font-black text-lg text-foreground tracking-tight">Bank API Keys</h1>
+      </div>
+
+      <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 space-y-4">
         {status && (
           <div className="flex items-center gap-2">
             <Badge
@@ -150,19 +132,33 @@ export default function BankKeySection() {
         )}
 
         {status?.has_keys && status.api_key_name && (
-          <div className="space-y-2">
-            {renderKeyRow(
-              status.api_key_name,
-              revealedKeys?.[status.api_key_name] ?? KEY_MASK,
-              status.api_key_name,
-              !!revealedKeys?.[status.api_key_name]
-            )}
-            {renderKeyRow(
-              "BANK_WEBHOOK_SECRET",
-              revealedKeys?.["BANK_WEBHOOK_SECRET"] ?? KEY_MASK,
-              "BANK_WEBHOOK_SECRET",
-              !!revealedKeys?.["BANK_WEBHOOK_SECRET"]
-            )}
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">{status.api_key_name}</p>
+              <div className="flex items-center gap-2">
+                <code className={`flex-1 p-2.5 rounded-lg text-xs font-mono tracking-wider border leading-none truncate ${revealedKeys?.[status.api_key_name] ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
+                  {revealedKeys?.[status.api_key_name] ?? KEY_MASK}
+                </code>
+                {revealedKeys?.[status.api_key_name] && (
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys[status.api_key_name!]!, status.api_key_name!)} className="h-9 w-9 p-0 shrink-0 rounded-lg">
+                    {copiedField === status.api_key_name ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">BANK_WEBHOOK_SECRET</p>
+              <div className="flex items-center gap-2">
+                <code className={`flex-1 p-2.5 rounded-lg text-xs font-mono tracking-wider border leading-none truncate ${revealedKeys?.["BANK_WEBHOOK_SECRET"] ? 'bg-emerald-500/5 text-emerald-700 border-emerald-500/20' : 'bg-background text-muted-foreground/60 border-primary/10'}`}>
+                  {revealedKeys?.["BANK_WEBHOOK_SECRET"] ?? KEY_MASK}
+                </code>
+                {revealedKeys?.["BANK_WEBHOOK_SECRET"] && (
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(revealedKeys["BANK_WEBHOOK_SECRET"]!, "BANK_WEBHOOK_SECRET")} className="h-9 w-9 p-0 shrink-0 rounded-lg">
+                    {copiedField === "BANK_WEBHOOK_SECRET" ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         )}
         {status && !status.has_keys && (
@@ -170,23 +166,23 @@ export default function BankKeySection() {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-sm font-bold">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs font-bold">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}
 
-        <div className="flex items-center gap-2 justify-end">
-          <Button onClick={handleGenerate} disabled={generating} className="h-9 rounded-xl text-xs font-black uppercase tracking-widest">
+        <div className="space-y-2">
+          <Button onClick={handleGenerate} disabled={generating} className="w-full h-9 rounded-xl text-xs font-black uppercase tracking-widest">
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
             {generating ? "Generating..." : status?.has_keys ? "Regenerate Keys" : "Generate Keys"}
           </Button>
-          <Button onClick={handleRotate} disabled={rotating} variant="outline" className="h-9 rounded-xl text-xs font-black uppercase tracking-widest">
+          <Button onClick={handleRotate} disabled={rotating} variant="outline" className="w-full h-9 rounded-xl text-xs font-black uppercase tracking-widest">
             {rotating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             {rotating ? "Rotating..." : "Rotate Webhook Secret"}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
