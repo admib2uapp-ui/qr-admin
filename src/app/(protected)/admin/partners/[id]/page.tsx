@@ -209,7 +209,7 @@ export default function PartnerDetailPage() {
       <Card className="overflow-hidden border-primary/10 shadow-xl shadow-primary/5">
         <CardHeader className="p-[3vw] sm:p-4 pb-[1.5vw] sm:pb-3">
           <CardTitle className="text-[4vw] sm:text-lg font-black text-foreground tracking-tight uppercase">
-            Admins ({admins.length})
+            Merchants ({merchants.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-[3vw] sm:p-4 pt-0">

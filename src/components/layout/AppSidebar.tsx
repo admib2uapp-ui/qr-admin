@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Receipt, Users, FileText, BarChart3, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog, Building2, LifeBuoy, Volume2 } from "lucide-react"
+import { LayoutDashboard, Receipt, Users, FileText, BarChart3, LogOut, Moon, Sun, ShieldCheck, PlusCircle, UserCog, Building2, LifeBuoy, Volume2, Key } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -132,6 +132,14 @@ export function AppSidebar({ theme, toggleTheme }: { theme: "light" | "dark"; to
                       <Link href="/admin/pending-merchants">
                         <PlusCircle className="h-4 w-4" />
                         <span>Pending Merchant IDs</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={pathname === '/admin/bank-keys'} tooltip="API Keys">
+                      <Link href="/admin/bank-keys">
+                        <Key className="h-4 w-4" />
+                        <span>API Keys</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
