@@ -32,9 +32,12 @@ The sidebar shows different links based on your role.
 **Partner admins additionally see:**
 - Pending Merchant IDs
 - Team
+- API Keys
 
 **Super admins additionally see:**
 - Manage Admins
+- Partners
+- Soundbox Report
 
 ---
 
@@ -75,6 +78,24 @@ This page lets you pre-register merchant IDs so that when a new merchant signs u
 - **Add** a new pending merchant ID
 - **View** your list of registered IDs
 - **Delete** an ID that's no longer needed
+
+---
+
+## API Keys (`/admin/bank-keys`)
+
+*Partner admin only.*
+
+Manage your bank worker's API credentials. These are the keys your bank uses to authenticate webhook requests to the LankaQR platform.
+
+**Status badge:** Shows "Keys Generated" when keys exist, "No Keys" when not yet set up.
+
+**Masked key display:** The secret names `API_KEY` and `WEBHOOK_SECRET` are always shown with masked values (****) so you can confirm keys are configured.
+
+**Generating keys:** Click "Generate Keys" to create a new API key and webhook secret. Both are immediately pushed to your bank's Cloudflare Worker. The full keys are shown once — copy them and share with the bank's technical team.
+
+**Rotating webhook secret:** Click "Rotate Webhook Secret" to generate a new signing secret. The old secret stops working immediately. Only the webhook secret changes — the API key stays the same.
+
+**Confirmation dialog:** A warning dialog appears before any action to prevent accidental changes.
 
 ---
 
@@ -164,6 +185,89 @@ You can add team members at levels **lower than your own** — for example, if y
 
 ---
 
+## Helpdesk (`/helpdesk`)
+
+Manage support tickets submitted by merchant users.
+
+**Tabs:** All / Open / Resolved / Closed — filter tickets by status.
+
+**Ticket list:** Shows subject, merchant name, status badge, and last updated time.
+
+**Viewing a ticket:** Click a ticket to open the detail panel:
+- **Original message** — the merchant's issue description
+- **Transaction info** — if the ticket is linked to a specific transaction
+- **Message thread** — full conversation history
+- **Reply** — type your response and click send
+
+**Changing status:** Use the status dropdown to mark tickets as Resolved or Closed. Resolving/Closing will delete the message thread.
+
+*Partner admins only see tickets from their own merchants.*
+
+---
+
+## Partners (`/admin/partners`)
+
+*Super admin only.*
+
+Manage partner organizations. Partners are companies that manage groups of merchants.
+
+**Actions:**
+- **Create** a new partner (provides a name and an admin email)
+- **View** partner details — see all admins and merchants under that partner
+- **Rename** a partner
+- **Delete** a partner (only if it has no admins or merchants linked)
+
+---
+
+## Soundbox Report (`/admin/soundbox-report`)
+
+*Super admin only.*
+
+View TTS (text-to-speech) usage across partners. Shows which partners are using the voice announcement feature, their success/failure rates, and terminal counts.
+
+**Search:** Filter partners by name.
+
+**Summary cards:** Total requests, successful requests, failed requests.
+
+---
+
+## Analytics (`/analytics`)
+
+PostHog-powered analytics showing how the QR4POS app is being used.
+
+**Tabs:**
+
+| Tab | What it shows |
+|---|---|
+| **Overview** | Page views, unique visitors, sessions, total events (last 7/30/90 days) |
+| **Events** | Raw event stream — filter by event type (e.g. `cash_recorded`, `qr_generated`, `payment_completed`) or search by text |
+| **Pages** | Most visited pages with view/visitor counts. Click the arrow to expand and see which users viewed each page |
+| **Sessions** | Recent browsing sessions with browser, OS, location, and page info |
+
+**Tip:** Use the "7 Days / 30 Days / 90 Days" selector at the top to change the date range.
+
+---
+
+## Team Management (`/admin/team`)
+
+*Partner admin only.*
+
+Manage your partner's team members and position structure.
+
+### Positions
+
+Positions define a hierarchy with levels 1 (highest) to 5 (lowest). The default "Admin" position at level 1 is created automatically when your partner is created.
+
+**Adding a position:** Enter a position name (e.g., "Manager", "Supervisor") and choose a level (1-5).
+
+### Team Members
+
+You can add team members at levels **lower than your own** — for example, if you're "Admin" (level 1), you can add members at levels 2-5. A member at level 2 can add members at levels 3-5.
+
+**Adding a team member:** Enter their email, select a position (only positions at lower levels than yours are shown), and they'll get a temporary password (`123456`) to sign in.
+
+---
+
 ## Users (`/admin/users`)
 
 *Listed as part of merchants view.*
@@ -175,7 +279,7 @@ View merchant users (the end-users of the QR4POS app). Super admins can enable/d
 ## FAQ
 
 **Q: I forgot my password. What do I do?**
-Contact your super admin to reset it. Password reset through the UI is not yet available.
+Go to `/forgot-password` and enter your email. You'll receive an OTP to reset your password.
 
 **Q: Why can't I see certain merchants or transactions?**
 You're logged in as a partner admin. You can only see data belonging to your partner organization.

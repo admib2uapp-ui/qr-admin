@@ -22,63 +22,86 @@ qr-web-admin/
 ├── public/
 ├── scripts/
 │   └── create-super-admin.ts       # Bootstrap first super admin
+├── public/                          # Static assets (manifest.json, sw.js, icons)
+│   └── sw.js                        # Service worker for push notifications
+├── scripts/
+│   └── create-super-admin.ts        # Bootstrap first super admin
 ├── src/
 │   ├── app/
-│   │   ├── globals.css
-│   │   ├── layout.tsx               # Root layout (ThemeProvider, AuthProvider)
-│   │   ├── page.tsx                  # Root — redirects to /dashboard
-│   │   ├── signin/
-│   │   │   └── page.tsx              # Sign-in form
+│   │   ├── globals.css              # Tailwind v4 + glassmorphism styles
+│   │   ├── layout.tsx               # Root layout (Geist fonts, metadata, manifest)
+│   │   ├── page.tsx                 # Redirects to /dashboard
+│   │   ├── signin/page.tsx          # Sign-in form
+│   │   ├── forgot-password/page.tsx  # Password reset flow
+│   │   ├── update-password/page.tsx  # Set new password after reset
 │   │   ├── (protected)/
-│   │   │   ├── layout.tsx            # AdminGuard + sidebar + content area
-│   │   │   ├── dashboard/
+│   │   │   ├── layout.tsx           # AdminGuard + SidebarProvider
+│   │   │   ├── dashboard/page.tsx   # Today's overview stats
 │   │   │   ├── merchants/
-│   │   │   ├── transactions/
-│   │   │   ├── reports/
-│   │   │   ├── analytics/
+│   │   │   │   ├── page.tsx         # Merchant/user list
+│   │   │   │   └── [id]/page.tsx    # Merchant detail
+│   │   │   ├── transactions/page.tsx# Transaction list with filters
+│   │   │   ├── reports/page.tsx     # Reports with chart
+│   │   │   ├── analytics/page.tsx   # PostHog analytics (4 tabs)
+│   │   │   ├── helpdesk/page.tsx    # Support ticket management
 │   │   │   └── admin/
-│   │   │       ├── manage/
-│   │   │       ├── team/
-│   │   │       └── pending-merchants/
+│   │   │       ├── manage/page.tsx  # Super admin: manage admins
+│   │   │       ├── partners/
+│   │   │       │   ├── page.tsx     # Super admin: list partners
+│   │   │       │   └── [id]/page.tsx# Super admin: partner detail
+│   │   │       ├── team/page.tsx    # Partner admin: team & positions
+│   │   │       ├── pending-merchants/page.tsx # Partner admin: pre-register IDs
+│   │   │       ├── bank-keys/page.tsx       # Partner admin: API key management
+│   │   │       └── soundbox-report/page.tsx # Super admin: TTS usage report
 │   │   └── api/
 │   │       ├── admin/
-│   │       │   ├── check/
-│   │       │   ├── manage/
-│   │       │   ├── manage/[id]/
-│   │       │   ├── team/
-│   │       │   ├── team/positions/
-│   │       │   ├── partners/
-│   │       │   └── pending-merchants/
-│   │       ├── dashboard/stats/
-│   │       ├── merchants/list/
-│   │       ├── transactions/list/
-│   │       ├── reports/summary/
-│   │       ├── users/list/
-│   │       ├── users/toggle-status/
-│   │       └── posthog/query/
+│   │       │   ├── check/route.ts   # GET — verify JWT
+│   │       │   ├── manage/route.ts  # GET/POST — list/create super admins
+│   │       │   ├── manage/[id]/route.ts # DELETE — remove admin
+│   │       │   ├── partners/route.ts# GET/POST — list/create partners
+│   │       │   ├── partners/[id]/route.ts # GET/PATCH/DELETE — partner detail
+│   │       │   ├── team/route.ts    # GET/POST — team members
+│   │       │   ├── team/positions/route.ts # GET/POST — position levels
+│   │       │   ├── pending-merchants/route.ts # GET/POST/DELETE
+│   │       │   ├── bank-keys/
+│   │       │   │   ├── status/route.ts    # GET — check key status
+│   │       │   │   ├── generate/route.ts  # POST — generate keys
+│   │       │   │   └── rotate/route.ts    # POST — rotate webhook secret
+│   │       │   └── soundbox-report/route.ts # POST — TTS report proxy
+│   │       ├── dashboard/stats/route.ts # GET — today's stats
+│   │       ├── merchants/list/route.ts  # GET — list merchants
+│   │       ├── merchants/[id]/route.ts  # GET/PATCH — merchant detail
+│   │       ├── transactions/list/route.ts # GET — list transactions
+│   │       ├── reports/summary/route.ts  # GET — filtered report
+│   │       ├── users/list/route.ts       # GET — list users
+│   │       ├── users/toggle-status/route.ts # POST — ban/unban user
+│   │       ├── posthog/query/route.ts    # POST — HogQL query proxy
+│   │       └── helpdesk/
+│   │           ├── tickets/route.ts      # GET — list tickets
+│   │           └── tickets/[id]/
+│   │               ├── route.ts          # GET/PATCH — ticket detail
+│   │               └── reply/route.ts    # POST — admin reply
 │   ├── components/
-│   │   ├── analytics/               # PostHog analytics components
-│   │   ├── dashboard/               # StatsCards
-│   │   ├── layout/                  # AdminGuard, AppSidebar
-│   │   ├── reports/                 # ReportsSummary
-│   │   ├── transactions/            # TransactionsTable
-│   │   ├── ui/                      # shadcn/ui primitives
-│   │   └── users/                   # UsersTable
+│   │   ├── analytics/              # 5 components (OverviewCards, PageViewsChart, EventsTable, PagesTable, SessionsTable)
+│   │   ├── dashboard/              # StatsCards
+│   │   ├── layout/                 # AppSidebar, AdminGuard, PwaSetup
+│   │   ├── merchants/              # MerchantInfo, MerchantTransactions
+│   │   ├── mobile/                 # 11 mobile-specific components
+│   │   ├── partners/               # BankKeySection
+│   │   ├── pwa/                    # InstallPWA
+│   │   ├── reports/                # ReportsSummary
+│   │   ├── transactions/           # TransactionsTable
+│   │   ├── ui/                     # 16 shadcn/ui primitives (includes confirm-dialog)
+│   │   └── users/                  # UsersTable
 │   ├── hooks/
-│   │   ├── useAuth.tsx              # AuthProvider + useAuth hook
-│   │   └── use-mobile.tsx           # Mobile breakpoint hook
+│   │   ├── useAuth.tsx             # AuthProvider + useAuth context
+│   │   ├── use-mobile.tsx          # Mobile breakpoint hook (768px)
+│   │   └── usePushNotifications.ts # VAPID push notification subscription
 │   └── lib/
-│       ├── api.ts                   # apiFetch() — fetch with Bearer token
-│       ├── posthog.ts               # posthogQuery() — HogQL query client
-│       ├── supabase.ts              # Supabase client singleton + helpers
-│       └── utils.ts                 # cn() classname merger
-├── USER_GUIDE.md
-├── DEVELOPER_GUIDE.md
-├── package.json
-├── tsconfig.json
-├── next.config.ts
-├── tailwind.config.ts (v4 in CSS)
-└── .env.local
+│       ├── api.ts                  # apiFetch() — Bearer token injection
+│       ├── posthog.ts              # posthogQuery() — HogQL to PostHog API
+│       ├── supabase.ts             # Supabase client + admin client
+│       └── utils.ts                # cn() — clsx + tailwind-merge
 ```
 
 ## Environment Variables
@@ -87,10 +110,15 @@ qr-web-admin/
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client-side Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-side Admin API key (keep secret) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-side Admin API key (bypasses RLS, keep secret) |
 | `POSTHOG_PERSONAL_API_KEY` | Yes | PostHog personal API token for HogQL queries |
 | `POSTHOG_PROJECT_ID` | Yes | PostHog project numeric ID |
 | `NEXT_PUBLIC_POSTHOG_HOST` | Yes | PostHog instance host (e.g. `https://us.i.posthog.com`) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | For PWA | VAPID public key for push notification subscription |
+| `SOUNDBOX_WORKER_URL` | For soundbox | URL of the Soundbox TTS worker |
+| `SOUNDBOX_ADMIN_TOKEN` | For soundbox | Auth token for Soundbox worker API |
+| `KEY_MANAGER_URL` | For bank-keys | URL of the bank-key-manager Cloudflare Worker |
+| `KEY_MANAGER_API_KEY` | For bank-keys | Shared secret for key-manager worker auth |
 
 ## Auth Flow
 
@@ -185,36 +213,90 @@ This admin panel shares a Supabase project with `qr-web-nextjs`. The relevant ta
 
 All database schema migrations live in the `qr-web-nextjs` project (`supabase/migrations/`).
 
-## API Routes
+## API Routes (All 19)
 
-### Auth & Admin
+### Auth & Admin Management
 
 | Route | Method | Auth | Purpose |
 |---|---|---|---|
-| `/api/admin/check` | GET | Bearer token | Verify JWT + look up admin record; returns `{admin, user}` or `{error}` |
-| `/api/admin/manage` | GET, POST | super_admin | List all admins with merchant counts; create new admin (creates auth user if not found) |
-| `/api/admin/manage/[id]` | DELETE | super_admin | Delete an admin record |
-| `/api/admin/partners` | GET, POST | super_admin | List partners; create partner (optionally auto-creates default "Admin" level-1 position) |
-| `/api/admin/team` | GET, POST | partner_admin | List team members scoped by position level; add new team member |
-| `/api/admin/team/positions` | GET, POST | partner_admin | List position levels for a partner; create a new position |
-| `/api/admin/pending-merchants` | GET, POST, DELETE | partner_admin | CRUD for pre-registered merchant IDs |
+| `/api/admin/check` | GET | Bearer token | Verify JWT + look up admin record |
+| `/api/admin/manage` | GET, POST | super_admin | List/create super admins |
+| `/api/admin/manage/[id]` | DELETE | super_admin | Delete a super admin |
+
+### Partner Management (super_admin)
+
+| Route | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/admin/partners` | GET, POST | super_admin | List partners with merchant/admin counts; create partner + default level-1 position + first admin |
+| `/api/admin/partners/[id]` | GET, PATCH, DELETE | super_admin | Partner detail (admins, merchants, positions), rename, delete (checks constraints) |
+
+### Partner Admin Scoped
+
+| Route | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/admin/team` | GET, POST | partner_admin | List team members scoped by position level; add team member (enforces hierarchy) |
+| `/api/admin/team/positions` | GET, POST | partner_admin | List/create position levels (1-5) for partner |
+| `/api/admin/pending-merchants` | GET, POST, DELETE | partner_admin | CRUD pre-registered merchant IDs for auto-linking |
+| `/api/admin/bank-keys/status` | GET | partner_admin | Check if API key + webhook secret exist on the bank's Cloudflare Worker |
+| `/api/admin/bank-keys/generate` | POST | partner_admin | Generate new API key + webhook secret, push via key-manager worker |
+| `/api/admin/bank-keys/rotate` | POST | partner_admin | Rotate webhook secret only (API key unchanged) |
+
+### Soundbox Report
+
+| Route | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/admin/soundbox-report` | POST | super_admin | Proxy report request to Soundbox worker at `/api/v1/report` |
 
 ### Business Data
 
 | Route | Method | Auth | Purpose |
 |---|---|---|---|
-| `/api/dashboard/stats` | GET | All admins | Today's merchant count, user count, transaction volume by tag (QR/CASH/CREDIT) |
-| `/api/merchants/list` | GET | All admins | List merchants (scoped by partner for non-super-admin) |
-| `/api/transactions/list` | GET | All admins | List transactions from completed/cancelled/pending tables, deduplicated |
-| `/api/users/list` | GET | All admins | List merchant users with profiles and ban status |
+| `/api/dashboard/stats` | GET | All admins | Today's merchant count, user count, transaction volume/count by tag (QR/CASH/CREDIT), recent 5 transactions |
+| `/api/merchants/list` | GET | All admins | List merchants (scoped by partner for partner_admin) |
+| `/api/merchants/[id]` | GET, PATCH | All admins | Merchant detail with linked user, team, recent 10 transactions; update fields |
+| `/api/transactions/list` | GET | All admins | Transactions from completed/cancelled/pending tables, deduplicated, filterable/sortable |
+| `/api/users/list` | GET | All admins | List merchant users with profiles, merchants, ban status |
 | `/api/users/toggle-status` | POST | super_admin | Ban/unban a user via `supabaseAdmin.auth.admin.updateUserById` |
-| `/api/reports/summary` | GET | All admins | Filtered transaction list for reports (date range, merchant filter) |
+| `/api/reports/summary` | GET | All admins | Filtered transaction list for reports (date range + merchant filter) |
+
+### Helpdesk
+
+| Route | Method | Auth | Purpose |
+|---|---|---|---|
+| `/api/helpdesk/tickets` | GET | All admins | List tickets with optional `?status=` filter, merchant name, message count |
+| `/api/helpdesk/tickets/[id]` | GET, PATCH | All admins | Ticket detail with message thread + linked transaction; update status (open/resolved/closed) |
+| `/api/helpdesk/tickets/[id]/reply` | POST | All admins | Add admin reply to a ticket |
 
 ### Analytics
 
 | Route | Method | Auth | Purpose |
 |---|---|---|---|
 | `/api/posthog/query` | POST | All admins | Proxy HogQL queries to PostHog Query API |
+
+## Helpdesk / Support Tickets
+
+The helpdesk system lets admins manage support tickets submitted by merchant users.
+
+### How it works
+
+- Tickets are created by merchant users in the `qr-web-nextjs` app and stored in `helpdesk_tickets` table
+- Admin panel displays tickets with status filters: All / Open / Resolved / Closed
+- Each ticket has an original message, optional linked transaction, and a message thread
+- Admins can reply to tickets (stored in `helpdesk_ticket_messages`)
+- Admins can change ticket status (open → resolved/closed). Resolving/Closing deletes messages.
+- Partner admins are scoped to tickets from their own partner's merchants
+
+### API endpoints
+
+- `GET /api/helpdesk/tickets?status=open` — list with optional filter
+- `GET /api/helpdesk/tickets/[id]` — full detail with messages + transaction
+- `PATCH /api/helpdesk/tickets/[id]` — update status
+- `POST /api/helpdesk/tickets/[id]/reply` — add admin reply
+
+### Relevant tables
+
+- `helpdesk_tickets` — id, merchant_id, transaction_id, ticket_type, reason, status, created_at
+- `helpdesk_ticket_messages` — id, ticket_id, sender_type (user/admin), message, created_at
 
 ## PostHog Analytics
 
@@ -232,30 +314,95 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 
 1. `src/lib/posthog.ts` — `posthogQuery()` sends a POST to `$POSTHOG_HOST/api/projects/$POSTHOG_PROJECT_ID/query/`
 2. `POST /api/posthog/query` — server-side proxy that calls `posthogQuery()` with the admin's auth token
-3. The analytics page (`src/app/(protected)/analytics/page.tsx`) fires 5 HogQL queries in parallel:
-   - **Stats**: `SELECT count(), uniq(distinct_id), countIf(event='$pageview') FROM events ...`
-   - **Chart**: `SELECT toDate(timestamp), count() FROM events WHERE event='$pageview' GROUP BY day ...`
-   - **Pages**: `SELECT properties.$current_url, count(), uniq(person_id) FROM events ...`
-   - **Viewers**: `SELECT e.properties.$current_url, e.distinct_id, p.properties['email'] FROM events e LEFT JOIN persons p ON p.id = e.person_id ...`
-   - **Events**: `SELECT e.event, e.properties, e.timestamp, e.distinct_id, p.properties['email'] FROM events e LEFT JOIN persons p ON p.id = e.person_id ...`
+3. The analytics page fires 5 HogQL queries in parallel:
+   - **Overview**: page views, unique visitors, sessions, total events (7/30/90 days)
+   - **Chart**: page views over time (Recharts line chart)
+   - **Pages**: top pages with view/visitor counts + expandable viewer list (email + distinct_id)
+   - **Events**: raw event stream with type filter + text search
+   - **Sessions**: recent `$pageview` events with browser, OS, IP, location
 
 ### Available HogQL tables
 
-- `events` — raw event data (columns: `event`, `properties`, `timestamp`, `distinct_id`, `person_id`)
-- `persons` — person profiles (columns: `id`, `properties`, `created_at`, `is_identified`)
+- `events` — raw event data (event, properties, timestamp, distinct_id, person_id)
+- `persons` — person profiles (id, properties, created_at)
 - `sessions` — session data
 
-Person properties like email are accessed via JOIN: `LEFT JOIN persons p ON p.id = e.person_id` then `p.properties['email']`.
+## Soundbox / TTS Report
 
-### Analytics components
+Super admins can view TTS (text-to-speech) usage across partners. This is a proxy to the Soundbox Cloudflare Worker.
 
-| Component | File | Purpose |
+### API
+
+`POST /api/admin/soundbox-report` — forwards request body to `SOUNDBOX_WORKER_URL/api/v1/report` with `Authorization: Bearer SOUNDBOX_ADMIN_TOKEN`
+
+### Components
+
+| File | Purpose |
+|---|---|
+| `src/app/(protected)/admin/soundbox-report/page.tsx` | Report page with search, summary cards, partner table |
+| `src/components/mobile/MobileSoundboxReport.tsx` | Mobile variant |
+
+## PWA & Push Notifications
+
+The admin panel supports installable PWA and push notifications.
+
+### Components
+
+| File | Purpose |
+|---|---|
+| `public/manifest.json` | PWA manifest (name: "QR4POS Admin") |
+| `public/sw.js` | Service worker (basic install + push event listeners) |
+| `src/components/pwa/InstallPWA.tsx` | "Install App" prompt (beforeinstallprompt) |
+| `src/components/layout/PwaSetup.tsx` | Initializes push notification subscription on mount |
+| `src/hooks/usePushNotifications.ts` | Subscribes to VAPID push via `supabaseAdmin` and stores token in `admin_device_tokens` |
+
+### Env
+
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+```
+
+## Mobile Components
+
+The admin panel has 11 mobile-specific components in `src/components/mobile/` for responsive design. Each major page conditionally renders a mobile variant using `useIsMobile()` (768px breakpoint).
+
+| Component | Route | Purpose |
 |---|---|---|
-| OverviewCards | `src/components/analytics/OverviewCards.tsx` | 4 stat cards |
-| PageViewsChart | `src/components/analytics/PageViewsChart.tsx` | Line chart (recharts) |
-| EventsTable | `src/components/analytics/EventsTable.tsx` | Event stream with filter + search |
-| PagesTable | `src/components/analytics/PagesTable.tsx` | Top pages with expandable viewer list |
-| SessionsTable | `src/components/analytics/SessionsTable.tsx` | Recent sessions with browser/OS/location |
+| `BottomNav.tsx` | — | Fixed bottom nav bar (role-based items) |
+| `MobileHeader.tsx` | — | Fixed top header with sidebar trigger |
+| `MobileBankKeys.tsx` | `/admin/bank-keys` | Bank key management (stacked layout) |
+| `MobileHelpdesk.tsx` | `/helpdesk` | Ticket list + detail with reply |
+| `MobileManageAdmins.tsx` | `/admin/manage` | Super admin management |
+| `MobileMerchantDetail.tsx` | `/merchants/[id]` | Merchant detail |
+| `MobileMerchants.tsx` | `/merchants` | Merchant/user list |
+| `MobilePartnerDetail.tsx` | `/admin/partners/[id]` | Partner detail |
+| `MobilePartners.tsx` | `/admin/partners` | Partners list |
+| `MobileSoundboxReport.tsx` | `/admin/soundbox-report` | TTS report |
+| `MobileTransactions.tsx` | `/transactions` | Transaction list with expandable rows |
+
+## Database Schema
+
+The admin panel shares a Supabase project with `qr-web-nextjs`. The relevant tables are:
+
+| Table | Key Columns |
+|---|---|
+| `admins` | `id`, `user_id` (→ `auth.users`), `email`, `role`, `partner_id`, `position_level_id` |
+| `partners` | `id`, `name` |
+| `position_levels` | `id`, `partner_id`, `position`, `level` (1-5) |
+| `profiles` | `id` (→ `auth.users`), `email`, `full_name`, `company_name` |
+| `merchants` | `id`, `merchant_id`, `merchant_name`, `user_id`, `partner_id`, `is_active` |
+| `admin_pending_merchants` | `id`, `admin_id`, `merchant_id` |
+| `transactions` | Pending transactions |
+| `completed_transactions` / `cancelled_transactions` | Settled/failed transactions |
+| `helpdesk_tickets` | `id`, `merchant_id`, `transaction_id`, `ticket_type`, `reason`, `status` |
+| `helpdesk_ticket_messages` | `id`, `ticket_id`, `sender_type`, `message` |
+| `admin_device_tokens` | Push notification device tokens |
+
+**Key relationships:**
+- `merchants.partner_id` → `partners.id`
+- `transactions.merchant_id` → `merchants.id`
+- `admins.partner_id` → `partners.id`
+- `helpdesk_tickets.merchant_id` → `merchants.id`
 
 ## Key Libraries & Utilities
 
@@ -280,6 +427,61 @@ React context providing:
 ### `supabaseAdmin` (`src/lib/supabase.ts`)
 
 Server-side Supabase client using the **service role key**. Can bypass RLS and manage auth users.
+
+## Bank Key Generation Flow
+
+Partner admins can generate and rotate API credentials for their bank's Cloudflare Worker through the admin panel. No keys are stored in Supabase.
+
+### Architecture
+
+```
+Partner Admin (browser)
+  │  JWT auth
+  ▼
+Admin Panel API Route (Next.js server)
+  │  POST /secrets/set (Authorization: Bearer KEY_MANAGER_API_KEY)
+  ▼
+bank-key-manager Worker (Cloudflare)
+  │  PATCH /accounts/{id}/workers/scripts/{worker}/secrets
+  ▼
+Target Bank Worker (e.g., seylan-api)
+```
+
+### Components
+
+| File | Purpose |
+|---|---|
+| `src/app/(protected)/admin/bank-keys/page.tsx` | Page — renders desktop or mobile component based on `useIsMobile()` |
+| `src/components/partners/BankKeySection.tsx` | Desktop UI: masked key display, generate/rotate buttons, confirm dialogs |
+| `src/components/mobile/MobileBankKeys.tsx` | Mobile variant with stacked layout |
+| `src/components/ui/confirm-dialog.tsx` | Reusable overlay dialog matching qr-web-nextjs pattern |
+
+### Key derivation rules
+
+```typescript
+// Worker name: lowercase, strip non-alphanumeric, append "-api"
+workerName = partner.name.toLowerCase().replace(/[^a-z0-9-]/g, '') + '-api';
+// e.g., "People's Bank" → "peoplesbank-api"
+
+// API key name: remove apostrophes, replace non-alpha with underscore, uppercase, append "_API_KEY"
+apiKeyName = partner.name.replace(/'/g,'').replace(/[^A-Za-z0-9]+/g,'_')...toUpperCase() + '_API_KEY';
+// e.g., "People's Bank" → "PEOPLES_BANK_API_KEY"
+```
+
+### Security
+
+- Keys are **never stored** in Supabase or the admin panel's database
+- The Cloudflare Worker is the sole source of truth for its secrets
+- The `KEY_MANAGER_API_KEY` shared secret authenticates the admin panel → key-manager
+- The key-manager's `CLOUDFLARE_API_TOKEN` must have `workers.secret:write` permission
+- Keys are displayed **once** after generate/rotate (with a copy button), then only `****` masks are shown
+
+### Env setup
+
+```env
+KEY_MANAGER_URL=https://bank-key-manager.qr4pos.workers.dev
+KEY_MANAGER_API_KEY=<shared-secret-matching-key-manager-QR_ADMIN_API_KEY>
+```
 
 ## Setup
 

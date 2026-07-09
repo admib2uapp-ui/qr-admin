@@ -4,91 +4,33 @@ Priority order: **P0** (high impact, core missing), **P1** (medium impact), **P2
 
 ---
 
-## 1. P0 — Merchant Detail & Edit Page
+## ✅ 0. Bank API Key Management
 
-### Description
-Currently `/merchants` shows a flat table of users with no drill-down. Add a clickable merchant detail page showing everything about a merchant: business info, QR details, linked user, team members, transactions, and payment status.
+**Status:** Live — built for partner admins.
 
-### Why
-Merchants are the core entity. Admins need to manage individual merchants — edit info, see their transactions, view team, and fix issues.
+Partner admins can generate and rotate their bank worker's API keys directly from the admin panel. Keys are pushed to the target Cloudflare Worker via a dedicated key-manager worker. No keys are stored in the database.
 
-### Files to create/modify
+### What was built
+- New `/admin/bank-keys` page for partner admins
+- "API Keys" nav item in sidebar (Company section)
+- 3 API routes: `/api/admin/bank-keys/status` (GET), `/api/admin/bank-keys/generate` (POST), `/api/admin/bank-keys/rotate` (POST)
+- `BankKeySection` component (desktop) + `MobileBankKeys` component (mobile)
+- `ConfirmDialog` reusable overlay component
+- `bank-key-manager` Cloudflare Worker (separate service in `qr-backend/key-manager/`)
 
-**New API route: `src/app/api/merchants/[id]/route.ts`**
-```
-GET  /api/merchants/[id]  → merchant details + linked user + team + recent transactions
-PATCH /api/merchants/[id] → update merchant name, payment_status, partner_id
-```
+---
 
-Returns:
-```json
-{
-  "merchant": {
-    "id", "merchant_id", "merchant_name", "bank_code", "terminal_id",
-    "city", "mcc", "currency_code", "country_code",
-    "payment_status", "last_payment_date", "payment_due_time",
-    "consecutive_missed_days", "referral_code", "referral_points",
-    "latitude", "longitude", "is_active",
-    "partner_id", "user_id", "created_at"
-  },
-  "user": { "id", "email", "full_name", "company_name", "whatsapp_number", "disabled" },
-  "team": [{ "id", "email", "full_name" }],
-  "recentTransactions": [...]
-}
-```
+## ✅ 1. Merchant Detail & Edit Page
 
-**New page: `src/app/(protected)/merchants/[id]/page.tsx`**
-- Sections: Business Info, Linked User, Team Members, Recent Transactions (last 20), Payment Status
-- Edit button toggles inline editing for merchant_name, payment_status, is_active
-- Back button to return to merchant list
-- "View All Transactions" link to `/transactions?merchantId=X`
+**Status:** Live
 
-**Update `UsersTable.tsx`** (or `src/components/merchants/MerchantsTable.tsx`)
-- Make merchant names clickable links to `/merchants/[id]`
-- Or add a row action button (eye icon)
+A clickable merchant detail page at `/merchants/[id]` showing business info, linked user, team members, recent transactions (10), and inline editing for merchant name.
 
-### DB tables affected
-- `merchants` (read + write)
-- `profiles` (read)
-- `merchant_team` (read)
-- `completed_transactions` / `transactions` (read)
-
-### UI mockup
-```
-┌──────────────────────────────────────────────┐
-│  ← Back to Merchants                    [Edit] │
-├──────────────────────────────────────────────┤
-│  Business Info                                │
-│  Name:  Green Grocery                              │
-│  QR ID: LKXXXX1234567890                     │
-│  Bank:  People's Bank                        │
-│  City:  Colombo                              │
-│  Active: ✅                                  │
-│  Partner: Colombo Partners                   │
-├──────────────────────────────────────────────┤
-│  Linked User                                 │
-│  Name:  Kamal Perera                         │
-│  Email: kamal@example.com                    │
-│  Company: Green Grocery (Pvt) Ltd            │
-│  Status: Active                              │
-├──────────────────────────────────────────────┤
-│  Payment Status                            [Manage] │
-│  Status:  Overdue (3 days)                   │
-│  Last Payment: 2026-06-15                    │
-│  Due By:     2026-06-20                      │
-├──────────────────────────────────────────────┤
-│  Recent Transactions                          │
-│  Ref#     Amount  Method  Status  Date        │
-│  ...      ...     ...     ...     ...          │
-│  [View All Transactions →]                    │
-└──────────────────────────────────────────────┘
-```
-
-### Acceptance criteria
-- Click a merchant row → navigates to detail page
-- Detail page shows all merchant fields, user info, team, recent txs
-- Edit button enables inline editing of name, status, active flag
-- Changes persist via PATCH API
+### Implemented
+- `GET /api/merchants/[id]` — returns merchant details + linked profile + team + recent 10 transactions
+- `PATCH /api/merchants/[id]` — update merchant_name, partner_id
+- `/merchants/[id]/page.tsx` — detail page with MerchantInfo + MerchantTransactions components
+- Mobile variant at `MobileMerchantDetail.tsx`
 - Partner admins scoped to their own merchants
 
 ---
@@ -155,132 +97,38 @@ Summary: 45 Active | 3 Overdue | 2 Pending
 
 ---
 
-## 3. P0 — Partner Management Page
+## ✅ 3. Partner Management Page
 
-### Description
-Currently partners are created only indirectly when adding a partner admin. Add a dedicated partners page to list, view, edit, and delete partner organizations.
+**Status:** Live
 
-### Why
-Partners are the organizational unit for partner admins. Managing them (renaming, seeing merchant count per partner, removing) requires a dedicated page.
+Full CRUD for partner organizations under `/admin/partners` (super_admin only).
 
-### Files to create/modify
-
-**New API routes:**
-- `src/app/api/admin/partners/[id]/route.ts`
-  ```
-  GET    /api/admin/partners/[id] → partner details + merchant count + admin count
-  PATCH  /api/admin/partners/[id] → rename partner
-  DELETE /api/admin/partners/[id] → delete partner (check for constraints)
-  ```
-- Update `src/app/api/admin/partners/route.ts` to return merchant + admin counts on list
-
-**New page: `src/app/(protected)/admin/partners/page.tsx`**
-- Table: Partner Name, Merchants Count, Admins Count, Created Date, Actions (Edit, Delete)
-- Create Partner button → inline form or modal
-- Click partner → navigate to partner detail (or expand row)
-- Partner detail shows list of admins + merchants under that partner
-
-**Update sidebar (`AppSidebar.tsx`)**
-- Add "Partners" link under Admin section (super_admin only)
-
-### DB tables affected
-- `partners` (read + write)
-- `admins` (read for counts)
-- `merchants` (read for counts)
-
-### UI mockup
-```
-┌──────────────────────────────────────────────────────┐
-│  Partners                               [+ New Partner] │
-├──────────┬──────────┬──────────┬──────────┬──────────┤
-│  Name     │ Merchants │ Admins   │ Created  │ Actions  │
-├──────────┼──────────┼──────────┼──────────┼──────────┤
-│  Colombo   │ 12        │ 3        │ 15 May   │ [✏️] [🗑️] │
-│  Partners  │           │          │          │          │
-├──────────┼──────────┼──────────┼──────────┼──────────┤
-│  Kandy     │ 8         │ 1        │ 01 Jun   │ [✏️] [🗑️] │
-│  Partners  │           │          │          │          │
-└──────────┴──────────┴──────────┴──────────┴──────────┘
-```
-
-### Acceptance criteria
-- Super admins can list, create, rename, delete partners
-- Partner list shows merchant count and admin count
-- Delete checks for existing admins/merchants before allowing
-- Partners page accessible from sidebar
+### Implemented
+- `GET /api/admin/partners` — list with merchant count + admin count
+- `POST /api/admin/partners` — create partner + default level-1 Admin position + first admin
+- `GET /api/admin/partners/[id]` — detail with admins, merchants, positions
+- `PATCH /api/admin/partners/[id]` — rename partner
+- `DELETE /api/admin/partners/[id]` — delete (blocked if admins/merchants exist)
+- `/admin/partners/page.tsx` — list page with create form
+- `/admin/partners/[id]/page.tsx` — detail page with edit/delete/teams/merchants
+- Mobile variants: `MobilePartners.tsx`, `MobilePartnerDetail.tsx`
 
 ---
 
-## 4. P0 — Helpdesk / Support Tickets
+## ✅ 4. Helpdesk / Support Tickets
 
-### Description
-The `helpdesk_tickets` table exists in the DB but has no admin UI. Build a support ticket management system for admins to view, filter, and respond to tickets.
+**Status:** Live
 
-### Why
-Merchant users need a way to get support. Without an admin UI for tickets, the table is useless.
+Full ticket management system under `/helpdesk`. Admins can view, filter, reply, and resolve tickets.
 
-### Files to create/modify
-
-**New API route: `src/app/api/helpdesk/tickets/route.ts`**
-```
-GET  /api/helpdesk/tickets → list all tickets with optional filters (status, merchant, date)
-```
-
-**New API route: `src/app/api/helpdesk/tickets/[id]/route.ts`**
-```
-GET    /api/helpdesk/tickets/[id] → ticket details + message thread
-PATCH  /api/helpdesk/tickets/[id] → update status (open/resolved/closed), add admin note
-```
-
-**New API route: `src/app/api/helpdesk/tickets/[id]/reply/route.ts`**
-```
-POST /api/helpdesk/tickets/[id]/reply → add admin reply to ticket
-```
-
-**New page: `src/app/(protected)/helpdesk/page.tsx`**
-- Ticket list with status badges: Open (red), In Progress (yellow), Resolved (green), Closed (gray)
-- Filter tabs: All, Open, In Progress, Resolved
-- Click ticket to open detail view (modal or separate page)
-- Detail view shows:
-  - Subject, description, merchant info, submitted date
-  - Message thread (user messages + admin replies)
-  - Reply textarea for admin
-  - Status dropdown to change status
-
-**Update sidebar (`AppSidebar.tsx`)**
-- Add "Helpdesk" link under Reports section for all admins
-
-### DB tables affected
-- `helpdesk_tickets` (read + write)
-- `helpdesk_ticket_messages` (new — or use existing structure if `helpdesk_tickets` has a messages column)
-
-Check the actual schema of `helpdesk_tickets` first — it may need a new related table for messages/replies.
-
-### UI mockup
-```
-┌────────────────────────────────────────────────────────────┐
-│  Helpdesk                [All] [Open] [In Progress] [Resolved] │
-├──────────┬──────────┬──────────┬──────────┬──────────┬──────────┤
-│  Subject  │ Merchant │ Status   │ Priority │ Updated  │ Actions  │
-├──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
-│  Can't    │ Green    │ 🔴 Open  │ High     │ 2h ago   │ [View]  │
-│  login    │ Grocery  │          │          │          │         │
-├──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
-│  Wrong    │ Blue     │ 🟡 In     │ Medium   │ 1d ago   │ [View]  │
-│  amount   │ Ocean    │ Progress │          │          │         │
-├──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
-│  New      │ Green    │ 🟢 Resolv │ Low      │ 3d ago   │ [View]  │
-│  feature  │ Grocery  │ ed       │          │          │         │
-└──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
-```
-
-### Acceptance criteria
-- List all tickets with status filters
-- View ticket detail with full conversation thread
-- Admin can reply to tickets
-- Admin can change ticket status
+### Implemented
+- `GET /api/helpdesk/tickets` — list tickets with `?status=` filter, merchant name, message count
+- `GET /api/helpdesk/tickets/[id]` — detail with full message thread + linked transaction
+- `PATCH /api/helpdesk/tickets/[id]` — update status (open/resolved/closed)
+- `POST /api/helpdesk/tickets/[id]/reply` — add admin reply
+- `/helpdesk/page.tsx` — ticket list + side panel detail with reply textarea + status dropdown
+- Mobile variant: `MobileHelpdesk.tsx`
 - Partner admins scoped to their own merchants' tickets
-- Create a `helpdesk_ticket_messages` migration if needed
 
 ---
 
